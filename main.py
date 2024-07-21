@@ -6,17 +6,11 @@ pygame.init()
 screen = pygame.display.set_mode((SCREEN_X, SCREEN_Y))
 clock = pygame.time.Clock()
 running = True
-cube = renderMath.Cuboid([
-    renderMath.Vector3(1, 1, 0),
-    renderMath.Vector3(3, 1, 0),
-    renderMath.Vector3(1, 1, 2),
-    renderMath.Vector3(3, 1, 2),
-    renderMath.Vector3(1, -1, 0),
-    renderMath.Vector3(3, -1, 0),
-    renderMath.Vector3(1, -1, 2),
-    renderMath.Vector3(3, -1, 2)
-])
-
+cube1 = renderMath.Cuboid(2, 2, 2, 2, 2, 2, (255, 0, 0))
+cube2 = renderMath.Cuboid(-2, 0, 2, 2, 2, 2, (0, 255, 0))
+cube3 = renderMath.Cuboid(2, 0, 2, 2, 2, 2, (0, 0, 255))
+cube4 = renderMath.Cuboid(0, 0, 2, 2, 2, 2, (127, 0, 127))
+cubes = [cube1, cube2, cube3, cube4]
 while running:
     screen.fill((0, 0, 0))
     for event in pygame.event.get():
@@ -24,35 +18,45 @@ while running:
             running = False
     keys = pygame.key.get_pressed()
     if keys[pygame.K_a]:
-        cube.add_x(-0.2)
+        for cube in cubes:
+            cube.add_x(-0.2)
     if keys[pygame.K_d]:
-        cube.add_x(0.2)
+        for cube in cubes:
+            cube.add_x(0.2)
     if keys[pygame.K_SPACE]:
-        cube.add_y(-0.2)
+        for cube in cubes:
+            cube.add_y(-0.2)
     if keys[pygame.K_LSHIFT]:
-        cube.add_y(0.2)
+        for cube in cubes:
+            cube.add_y(0.2)
     if keys[pygame.K_w]:
-        cube.add_z(0.2)
+        for cube in cubes:
+            cube.add_z(0.2)
     if keys[pygame.K_s]:
-        if cube.v1.z >= 0.2:
+        for cube in cubes:
             cube.add_z(-0.2)
     if keys[pygame.K_ESCAPE]:
         running = False
-    """
-    pixelList = cube.project(0.4)
-    for pixel in pixelList:
-        pygame.draw.circle(screen, (255, 0, 0), pixel, 5)
-    lineList = cube.project_lines(0.4)
-    for line in lineList:
-        pygame.draw.line(screen, (255, 0, 0), line[0], line[1])
-    """
-    polygonList = cube.project_polygons(20)
+
+    outList = []
+    for cube in cubes:
+        polygons = cube.project_polygons(20)
+        for i in range(0, len(polygons)):
+            polygons[i].append(cube.color)
+            outList.append(polygons[i])
+    polygonList = []
+    while len(outList) > 0:
+        highestFound = outList[0]
+        for i in outList:
+            if i[1] >= highestFound[1]:
+                highestFound = i
+        outList.remove(highestFound)
+        polygonList.append(highestFound)
     for polygon in polygonList:
-        pygame.draw.polygon(screen, (255, 0, 0), polygon)
+        pygame.draw.polygon(screen, polygon[2], polygon[0])
 
     pygame.display.flip()
     clock.tick(30)
-    print(cube.v1.z)
 
 pygame.quit()
 exit(0)
